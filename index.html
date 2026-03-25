@@ -334,7 +334,7 @@ function grouped(key) {
 
 // ── INCIDENTES GRAVES ────────────────────────────────
 function renderIncidents() {
-  const graves = filtered.filter(i => i.priority === 'P1' && !i.resolved);
+  const graves = filtered.filter(i => i.issuetype === '[System] Incident' && !i.resolved);
   const el = document.getElementById('incidentSection');
   if(!graves.length) { el.innerHTML=''; return; }
   const rows = graves.slice(0,50).map(i=>`
@@ -350,7 +350,7 @@ function renderIncidents() {
   el.innerHTML = `
     <div style="background:#1a0f0f;border:1px solid #ef4444;border-radius:12px;padding:18px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="font-size:0.9rem;font-weight:700;color:#f87171">🚨 Incidentes Graves em Aberto (P1)</div>
+        <div style="font-size:0.9rem;font-weight:700;color:#f87171">🚨 Incidentes Graves em Aberto ([System] Incident)</div>
         <span style="background:#ef444422;color:#f87171;border:1px solid #ef444455;padding:3px 12px;border-radius:12px;font-size:0.78rem;font-weight:700">${graves.length} tickets</span>
       </div>
       <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
