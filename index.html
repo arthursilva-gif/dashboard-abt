@@ -3,146 +3,456 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard ABT — Suporte N2/N3</title>
+<title>Dashboard ABT — Backlog N2/N3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
-  header { background: linear-gradient(135deg, #1e3a5f 0%, #1a1f2e 100%); padding: 24px 32px; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
-  header .subtitle { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
-  .badge { background: #3b82f6; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-  .container { padding: 24px 32px; }
-  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
-  .kpi-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; text-align: center; position: relative; overflow: hidden; }
-  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-  .kpi-card.blue::before { background: #3b82f6; }
-  .kpi-card.red::before { background: #ef4444; }
-  .kpi-card.yellow::before { background: #f59e0b; }
-  .kpi-card.green::before { background: #10b981; }
-  .kpi-card.purple::before { background: #8b5cf6; }
-  .kpi-card.orange::before { background: #f97316; }
-  .kpi-value { font-size: 2.5rem; font-weight: 800; line-height: 1; color: #fff; }
-  .kpi-label { font-size: 0.75rem; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .kpi-sub { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
-  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; margin-bottom: 24px; }
-  .chart-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; }
-  .chart-card h3 { font-size: 0.9rem; font-weight: 600; color: #cbd5e1; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .chart-wrap { position: relative; height: 260px; }
-  .chart-wrap.tall { height: 300px; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  thead th { background: #0f1117; color: #94a3b8; font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 1px solid #2d3748; white-space: nowrap; }
-  tbody tr { border-bottom: 1px solid #1e293b; transition: background 0.15s; }
-  tbody tr:hover { background: #1e293b; }
-  tbody td { padding: 10px 14px; color: #cbd5e1; }
-  .pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-  .pill-jogador { background: #d9770622; color: #fbbf24; border: 1px solid #d9770666; }
-  .pill-forn { background: #47556922; color: #94a3b8; border: 1px solid #47556966; }
-  .pill-interno { background: #0d947022; color: #34d399; border: 1px solid #0d947066; }
-  .pill-major { background: #ef444422; color: #f87171; border: 1px solid #ef444466; }
-  .pill-n2 { background: #1e40af22; color: #60a5fa; border: 1px solid #1e40af66; }
-  .pill-n3 { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed66; }
-  .pill-resolvido { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a66; }
-  .notice { background: #1e293b; border: 1px solid #334155; border-left: 3px solid #f59e0b; border-radius: 8px; padding: 12px 16px; font-size: 0.8rem; color: #94a3b8; margin-bottom: 20px; }
-  .notice strong { color: #f59e0b; }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--card:#1a1f2e;--border:#2d3748;--text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;--blue:#3b82f6;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--orange:#f97316;--pink:#ec4899;--teal:#06b6d4}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#1e3a5f,#1a1f2e);padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+header h1{font-size:1.4rem;font-weight:700;color:#fff}
+.header-meta{font-size:0.78rem;color:var(--muted);margin-top:4px}
+.header-right{display:flex;align-items:center;gap:12px}
+.badge{background:var(--blue);color:#fff;padding:5px 14px;border-radius:20px;font-size:0.8rem;font-weight:700}
+.refresh-btn{background:#1e293b;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;transition:all .2s}
+.refresh-btn:hover{border-color:var(--blue);color:var(--blue)}
+.loading-bar{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--blue);z-index:999;transition:width .3s}
+
+/* FILTERS */
+.filter-bar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:8px}
+.filter-group label{font-size:0.75rem;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+select{background:#0f1117;border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;outline:none}
+select:focus{border-color:var(--blue)}
+.filter-clear{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem}
+.filter-clear:hover{border-color:var(--red);color:var(--red)}
+.filter-active{border-color:var(--blue)!important;color:var(--blue)!important}
+
+/* LAYOUT */
+.container{padding:20px 28px}
+
+/* KPIs */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.kpi:hover{border-color:var(--blue)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.c-blue::before{background:var(--blue)}
+.kpi.c-yellow::before{background:var(--yellow)}
+.kpi.c-orange::before{background:var(--orange)}
+.kpi.c-red::before{background:var(--red)}
+.kpi.c-purple::before{background:var(--purple)}
+.kpi.c-green::before{background:var(--green)}
+.kpi.c-teal::before{background:var(--teal)}
+.kpi.c-pink::before{background:var(--pink)}
+.kpi-val{font-size:2.2rem;font-weight:800;color:#fff;line-height:1}
+.kpi-label{font-size:0.72rem;color:var(--muted);margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
+.kpi-pct{font-size:0.68rem;color:var(--dim);margin-top:2px}
+.kpi.active-filter{background:#1e3a5f;border-color:var(--blue)}
+
+/* CHARTS GRID */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px;margin-bottom:20px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:0.85rem;font-weight:600;color:#cbd5e1;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.chart-title span.count{margin-left:auto;background:#0f1117;border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:12px;font-size:0.72rem}
+.chart-wrap{position:relative}
+.chart-wrap.h220{height:220px}
+.chart-wrap.h260{height:260px}
+.chart-wrap.h300{height:300px}
+.chart-wrap.h340{height:340px}
+
+/* TIME TABS */
+.tab-row{display:flex;gap:6px;margin-bottom:12px}
+.tab{background:#0f1117;border:1px solid var(--border);color:var(--muted);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.75rem}
+.tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* TABLE */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px}
+.table-wrap{overflow-x:auto;max-height:380px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+thead th{background:#0f1117;color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;white-space:nowrap}
+tbody tr{border-bottom:1px solid #1e293b;transition:background .1s}
+tbody tr:hover{background:#1e293b}
+tbody td{padding:8px 12px;color:#cbd5e1}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.68rem;font-weight:600;white-space:nowrap}
+
+/* STATUS PILLS */
+.p-n2{background:#1e40af22;color:#60a5fa;border:1px solid #1e40af55}
+.p-n3{background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed55}
+.p-jogador{background:#d9770622;color:#fbbf24;border:1px solid #d9770655}
+.p-fornecedor{background:#47556922;color:#94a3b8;border:1px solid #47556955}
+.p-interno{background:#0d947022;color:#34d399;border:1px solid #0d947055}
+.p-major{background:#ef444422;color:#f87171;border:1px solid #ef444455}
+.p-resolvido{background:#16a34a22;color:#4ade80;border:1px solid #16a34a55}
+.p-outros{background:#33333322;color:#94a3b8;border:1px solid #33333355}
+
+.no-data{text-align:center;color:var(--dim);padding:40px;font-size:0.9rem}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto;display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<div class="loading-bar" id="loadingBar"></div>
+
 <header>
   <div>
-    <h1>📊 Dashboard ABT — Suporte N2/N3</h1>
-    <div class="subtitle">Filtro Jira #19623 · Atualizado em 23/03/2026 16:53</div>
+    <h1>📊 Dashboard ABT — Backlog N2/N3</h1>
+    <div class="header-meta" id="headerMeta">Carregando dados...</div>
   </div>
-  <div class="badge">100 tickets</div>
+  <div class="header-right">
+    <span class="badge" id="totalBadge">—</span>
+    <button class="refresh-btn" onclick="loadData(true)">⟳ Atualizar</button>
+  </div>
 </header>
+
+<div class="filter-bar">
+  <div class="filter-group">
+    <label>Status</label>
+    <select id="fStatus" onchange="applyFilters()"><option value="">Todos</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Responsável</label>
+    <select id="fAssignee" onchange="applyFilters()"><option value="">Todos</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Prioridade</label>
+    <select id="fPriority" onchange="applyFilters()"><option value="">Todas</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Categoria</label>
+    <select id="fCategory" onchange="applyFilters()"><option value="">Todas</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Time Interno</label>
+    <select id="fTimeInterno" onchange="applyFilters()"><option value="">Todos</option></select>
+  </div>
+  <button class="filter-clear" onclick="clearFilters()">✕ Limpar filtros</button>
+</div>
+
 <div class="container">
-  <div class="notice"><strong>ℹ️ Nota:</strong> Dados em tempo real do filtro Jira #19623. TPC e TMA requerem acesso ao changelog via API avançada. Categorias inferidas dos títulos dos tickets.</div>
+  <div id="loadingState" style="text-align:center"><div class="spinner"></div><p style="color:var(--muted);margin-top:8px">Buscando 451+ tickets do Jira...</p></div>
+  <div id="dashContent" style="display:none">
 
-  <div class="kpi-row">
-    <div class="kpi-card blue"><div class="kpi-value">100</div><div class="kpi-label">Total de Tickets</div></div>
-    <div class="kpi-card yellow"><div class="kpi-value">39</div><div class="kpi-label">Aguard. Informações Jogador</div><div class="kpi-sub">39% do total</div></div>
-    <div class="kpi-card orange"><div class="kpi-value">29</div><div class="kpi-label">Aguard. Fornecedor</div><div class="kpi-sub">29% do total</div></div>
-    <div class="kpi-card red"><div class="kpi-value">19</div><div class="kpi-label">Aguard. Atend. Interno</div><div class="kpi-sub">19% do total</div></div>
-    <div class="kpi-card purple"><div class="kpi-value">5</div><div class="kpi-label">Aguardando Major</div><div class="kpi-sub">5% do total</div></div>
-    <div class="kpi-card green"><div class="kpi-value">1</div><div class="kpi-label">Resolvido N3</div><div class="kpi-sub">1% do total</div></div>
-  </div>
+    <!-- KPIs -->
+    <div class="kpi-row" id="kpiRow"></div>
 
-  <div class="charts-grid">
-    <div class="chart-card">
-      <h3>📌 Tickets por Status</h3>
-      <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+    <!-- Charts Row 1 -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">📌 Tickets por Status <span class="count" id="c1count"></span></div>
+        <div class="chart-wrap h260"><canvas id="chartStatus"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">👤 Tickets por Responsável <span class="count" id="c2count"></span></div>
+        <div class="chart-wrap h260"><canvas id="chartAssignee"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🏷️ Categoria (por título) <span class="count" id="c3count"></span></div>
+        <div class="chart-wrap h260"><canvas id="chartCategory"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🏢 Time Interno Escalado <span class="count" id="c4count"></span></div>
+        <div class="chart-wrap h260"><canvas id="chartTimeInterno"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">⚡ Prioridade <span class="count" id="c5count"></span></div>
+        <div class="chart-wrap h260"><canvas id="chartPriority"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📋 Tipo de Issue <span class="count" id="c6count"></span></div>
+        <div class="chart-wrap h260"><canvas id="chartIssuetype"></canvas></div>
+      </div>
     </div>
-    <div class="chart-card">
-      <h3>👤 Tickets por Responsável</h3>
-      <div class="chart-wrap"><canvas id="chartAssignee"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>🏷️ Tickets por Categoria</h3>
-      <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>🏢 Distribuição por Fila</h3>
-      <div class="chart-wrap"><canvas id="chartFila"></canvas></div>
-    </div>
-  </div>
 
-  <div class="chart-card" style="margin-bottom:24px;">
-    <h3>📋 Resumo por Responsável</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Responsável</th><th>Total</th><th>Aguard. Jogador</th><th>Aguard. Fornecedor</th><th>Aguard. Interno</th><th>Aguard. Major</th><th>Em Atend. N2</th><th>Em Atend. N3</th><th>Resolvido</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><strong>Anna Luiza Abrantes Carneiro</strong></td>
-            <td><strong>53</strong></td>
-            <td><span class="pill pill-jogador">21</span></td>
-            <td><span class="pill pill-forn">15</span></td>
-            <td><span class="pill pill-interno">10</span></td>
-            <td><span class="pill pill-major">3</span></td>
-            <td><span class="pill pill-n2">1</span></td>
-            <td><span class="pill pill-n3">3</span></td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td><strong>Ana Karoline Nascimento de Souza</strong></td>
-            <td><strong>47</strong></td>
-            <td><span class="pill pill-jogador">18</span></td>
-            <td><span class="pill pill-forn">14</span></td>
-            <td><span class="pill pill-interno">9</span></td>
-            <td><span class="pill pill-major">2</span></td>
-            <td>—</td>
-            <td><span class="pill pill-n3">2</span></td>
-            <td><span class="pill pill-resolvido">1</span></td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Temporal -->
+    <div class="chart-card full" style="margin-bottom:18px">
+      <div class="chart-title">📅 Volume de Chamados Criados ao Longo do Tempo</div>
+      <div class="tab-row">
+        <button class="tab active" onclick="setTimeTab('hour',this)">Por Hora</button>
+        <button class="tab" onclick="setTimeTab('day',this)">Por Dia</button>
+        <button class="tab" onclick="setTimeTab('week',this)">Por Semana</button>
+        <button class="tab" onclick="setTimeTab('month',this)">Por Mês</button>
+      </div>
+      <div class="chart-wrap h300"><canvas id="chartTime"></canvas></div>
     </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="chart-title">📋 Tickets Detalhados <span class="count" id="tableCount"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Chave</th>
+              <th>Resumo</th>
+              <th>Status</th>
+              <th>Responsável</th>
+              <th>Prioridade</th>
+              <th>Categoria</th>
+              <th>Time Interno</th>
+              <th>Criado</th>
+              <th>Atualizado</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script>
-const C = ['#3b82f6','#f59e0b','#f97316','#ef4444','#8b5cf6','#10b981','#06b6d4','#ec4899','#84cc16','#6366f1'];
+const COLORS = ['#3b82f6','#f59e0b','#ef4444','#10b981','#8b5cf6','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1','#14b8a6','#f43f5e'];
 
-new Chart(document.getElementById('chartStatus'),{type:'bar',data:{
-  labels:['Aguard. Info Jogador','Aguard. Fornecedor','Aguard. Atend. Interno','Em Atend. N3','Aguard. Major','Aguard. Aprovação','Em Atend. N2','Resolvido N3'],
-  datasets:[{data:[39,29,19,5,5,1,1,1],backgroundColor:C,borderRadius:4,label:'Tickets'}]
-},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}},y:{ticks:{color:'#cbd5e1',font:{size:11}},grid:{color:'#1e293b'}}}}});
+let rawData = [];
+let filtered = [];
+let charts = {};
+let currentTimeTab = 'hour';
 
-new Chart(document.getElementById('chartAssignee'),{type:'doughnut',data:{
-  labels:['Anna Luiza Abrantes Carneiro','Ana Karoline Nascimento de Souza'],
-  datasets:[{data:[53,47],backgroundColor:['#3b82f6','#8b5cf6'],borderColor:'#1a1f2e',borderWidth:2}]
-},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:12},padding:12}}}}});
+// ── LOAD DATA ──────────────────────────────────────
+async function loadData(refresh=false) {
+  document.getElementById('loadingBar').style.width = '30%';
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('dashContent').style.display = 'none';
+  try {
+    const url = refresh ? '/api/data?refresh=1' : '/api/data';
+    const res = await fetch(url);
+    const json = await res.json();
+    rawData = json.issues || [];
+    document.getElementById('headerMeta').textContent = `Filtro Jira #19623 · Atualizado em ${new Date(json.fetchedAt).toLocaleString('pt-BR')}`;
+    document.getElementById('totalBadge').textContent = `${json.total} tickets`;
+    populateFilters();
+    filtered = [...rawData];
+    document.getElementById('loadingBar').style.width = '100%';
+    setTimeout(()=>document.getElementById('loadingBar').style.width='0%', 500);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashContent').style.display = 'block';
+    renderAll();
+  } catch(e) {
+    document.getElementById('loadingState').innerHTML = `<p style="color:var(--red);padding:40px">Erro ao carregar dados: ${e.message}</p>`;
+  }
+}
 
-new Chart(document.getElementById('chartCategory'),{type:'doughnut',data:{
-  labels:['Login / Conta / Cadastro','Saque / Devolução','Bônus / Promoção / Cashback','Outros','Jogos / Apostas','Depósito / Pagamento','KYC / Conformidade','Tracking / Fornecedor'],
-  datasets:[{data:[31,23,16,13,10,4,2,1],backgroundColor:C,borderColor:'#1a1f2e',borderWidth:2}]
-},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11},boxWidth:12,padding:8}}}}});
+// ── FILTERS ─────────────────────────────────────────
+function populateFilters() {
+  const populate = (id, key) => {
+    const sel = document.getElementById(id);
+    const vals = [...new Set(rawData.map(i=>i[key]).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">Todos</option>' + vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+  };
+  populate('fStatus','status');
+  populate('fAssignee','assignee');
+  populate('fPriority','priority');
+  populate('fCategory','category');
+  populate('fTimeInterno','timeInterno');
+}
 
-new Chart(document.getElementById('chartFila'),{type:'pie',data:{
-  labels:['Aguard. Jogador','Aguard. Fornecedor','Aguard. Interno','Outros (N2/N3/Major/etc)'],
-  datasets:[{data:[39,29,19,13],backgroundColor:['#f59e0b','#f97316','#ef4444','#8b5cf6'],borderColor:'#1a1f2e',borderWidth:2}]
-},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:12},padding:12}}}}});
+function applyFilters() {
+  const fs = document.getElementById('fStatus').value;
+  const fa = document.getElementById('fAssignee').value;
+  const fp = document.getElementById('fPriority').value;
+  const fc = document.getElementById('fCategory').value;
+  const ft = document.getElementById('fTimeInterno').value;
+  filtered = rawData.filter(i =>
+    (!fs || i.status===fs) &&
+    (!fa || i.assignee===fa) &&
+    (!fp || i.priority===fp) &&
+    (!fc || i.category===fc) &&
+    (!ft || i.timeInterno===ft)
+  );
+  renderAll();
+}
+
+function clearFilters() {
+  ['fStatus','fAssignee','fPriority','fCategory','fTimeInterno'].forEach(id=>{
+    document.getElementById(id).value='';
+    document.getElementById(id).classList.remove('filter-active');
+  });
+  filtered = [...rawData];
+  renderAll();
+}
+
+function setTimeTab(tab, btn) {
+  currentTimeTab = tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTimeChart();
+}
+
+// ── RENDER ALL ──────────────────────────────────────
+function renderAll() {
+  renderKPIs();
+  renderBarChart('chartStatus','c1count',grouped('status'));
+  renderHBarChart('chartAssignee','c2count',grouped('assignee'));
+  renderDoughnut('chartCategory','c3count',grouped('category'));
+  renderDoughnut('chartTimeInterno','c4count',grouped('timeInterno'));
+  renderBarChart('chartPriority','c5count',grouped('priority'));
+  renderDoughnut('chartIssuetype','c6count',grouped('issuetype'));
+  renderTimeChart();
+  renderTable();
+}
+
+// ── GROUPING ────────────────────────────────────────
+function grouped(key) {
+  const m = {};
+  filtered.forEach(i => { const v=i[key]||'N/A'; m[v]=(m[v]||0)+1; });
+  const sorted = Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  return { labels: sorted.map(x=>x[0]), data: sorted.map(x=>x[1]) };
+}
+
+// ── KPIs ────────────────────────────────────────────
+function renderKPIs() {
+  const total = filtered.length;
+  const statuses = grouped('status');
+  const get = (label) => {
+    const idx = statuses.labels.indexOf(label);
+    return idx>=0 ? statuses.data[idx] : 0;
+  };
+
+  const kpis = [
+    { val: total, label: 'Total de Tickets', cls: 'c-blue', filter: null },
+    { val: get('Aguardando Major'), label: 'Aguard. Major', cls: 'c-red', filter: { fStatus: 'Aguardando Major' } },
+    { val: get('Aguardando Atendimento Interno'), label: 'Aguard. Interno', cls: 'c-orange', filter: { fStatus: 'Aguardando Atendimento Interno' } },
+    { val: get('Aguardando Atendimento Fornecedor'), label: 'Aguard. Fornecedor', cls: 'c-yellow', filter: { fStatus: 'Aguardando Atendimento Fornecedor' } },
+    { val: get('Aguardando Informações Do Jogador'), label: 'Aguard. Jogador', cls: 'c-teal', filter: { fStatus: 'Aguardando Informações Do Jogador' } },
+    { val: get('Em Atendimento N3') + get('Em Aberto N3') + get('Reaberto N3'), label: 'Em N3', cls: 'c-purple', filter: null },
+    { val: get('Em Atendimento N2') + get('Em Aberto N2'), label: 'Em N2', cls: 'c-blue', filter: null },
+    { val: get('Resolvido N3'), label: 'Resolvidos', cls: 'c-green', filter: { fStatus: 'Resolvido N3' } },
+  ];
+
+  document.getElementById('kpiRow').innerHTML = kpis.map((k,i) => `
+    <div class="kpi ${k.cls}" onclick="kpiClick(${JSON.stringify(k.filter||{})})">
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-pct">${total>0?(k.val/total*100).toFixed(1):0}%</div>
+    </div>
+  `).join('');
+}
+
+function kpiClick(filterMap) {
+  Object.entries(filterMap).forEach(([id,val]) => {
+    const el = document.getElementById(id);
+    if(el) { el.value = val; el.classList.add('filter-active'); }
+  });
+  if(Object.keys(filterMap).length) applyFilters();
+}
+
+// ── CHART HELPERS ───────────────────────────────────
+function destroyChart(id) {
+  if(charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function renderBarChart(id, countId, {labels, data}) {
+  destroyChart(id);
+  document.getElementById(countId).textContent = filtered.length + ' tickets';
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: COLORS, borderRadius: 4 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label: c=>`${c.raw} tickets (${(c.raw/filtered.length*100).toFixed(1)}%)`}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}}, y:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}}}}
+  });
+}
+
+function renderHBarChart(id, countId, {labels, data}) {
+  destroyChart(id);
+  document.getElementById(countId).textContent = filtered.length + ' tickets';
+  // Limit top 12
+  const top = Math.min(12, labels.length);
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels: labels.slice(0,top), datasets: [{ data: data.slice(0,top), backgroundColor: COLORS, borderRadius: 4 }] },
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label: c=>`${c.raw} tickets`}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}}, y:{ticks:{color:'#64748b',font:{size:11}},grid:{color:'#1e293b'}}}}
+  });
+}
+
+function renderDoughnut(id, countId, {labels, data}) {
+  destroyChart(id);
+  document.getElementById(countId).textContent = filtered.length + ' tickets';
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: COLORS, borderColor:'#1a1f2e', borderWidth:2 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right', labels:{color:'#94a3b8',font:{size:11},boxWidth:12,padding:8}}, tooltip:{callbacks:{label: c=>`${c.label}: ${c.raw} (${(c.raw/filtered.length*100).toFixed(1)}%)`}}}}
+  });
+}
+
+// ── TIME CHART ──────────────────────────────────────
+function renderTimeChart() {
+  destroyChart('chartTime');
+  const buckets = {};
+
+  filtered.forEach(i => {
+    const d = new Date(i.created);
+    let key;
+    if(currentTimeTab==='hour') key = `${d.toLocaleDateString('pt-BR')} ${String(d.getHours()).padStart(2,'0')}h`;
+    else if(currentTimeTab==='day') key = d.toLocaleDateString('pt-BR');
+    else if(currentTimeTab==='week') {
+      const dow = d.getDay();
+      const start = new Date(d); start.setDate(d.getDate()-dow);
+      key = `Sem ${start.toLocaleDateString('pt-BR')}`;
+    } else key = d.toLocaleString('pt-BR',{month:'short',year:'numeric'});
+    buckets[key] = (buckets[key]||0)+1;
+  });
+
+  const labels = Object.keys(buckets).sort((a,b)=>{
+    // sort by original date order
+    return a.localeCompare(b);
+  });
+  const data = labels.map(k=>buckets[k]);
+
+  // Running total
+  let running = 0;
+  const cumulative = data.map(v => { running+=v; return running; });
+
+  charts['chartTime'] = new Chart(document.getElementById('chartTime'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { type:'bar', label:'Criados', data, backgroundColor:'#3b82f655', borderColor:'#3b82f6', borderWidth:1, borderRadius:3, yAxisID:'y' },
+        { type:'line', label:'Acumulado', data:cumulative, borderColor:'#f59e0b', borderWidth:2, pointRadius:2, tension:0.3, fill:false, yAxisID:'y2' }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, interaction:{mode:'index'}, plugins:{ legend:{labels:{color:'#94a3b8',font:{size:12}}}}, scales:{ x:{ticks:{color:'#64748b',maxRotation:45},grid:{color:'#1e293b'}}, y:{ticks:{color:'#64748b'},grid:{color:'#1e293b'},title:{display:true,text:'Criados',color:'#64748b'}}, y2:{position:'right',ticks:{color:'#f59e0b'},grid:{display:false},title:{display:true,text:'Acumulado',color:'#f59e0b'}}}}
+  });
+}
+
+// ── TABLE ────────────────────────────────────────────
+function statusPill(s) {
+  const m = {
+    'Em Aberto N2':'p-n2','Em Atendimento N2':'p-n2',
+    'Em Aberto N3':'p-n3','Em Atendimento N3':'p-n3','Reaberto N3':'p-n3',
+    'Aguardando Informações Do Jogador':'p-jogador',
+    'Aguardando Atendimento Fornecedor':'p-fornecedor',
+    'Aguardando Atendimento Interno':'p-interno',
+    'Aguardando Major':'p-major',
+    'Resolvido N3':'p-resolvido',
+  };
+  return `<span class="pill ${m[s]||'p-outros'}">${s}</span>`;
+}
+
+function renderTable() {
+  const items = filtered.slice(0,300);
+  document.getElementById('tableCount').textContent = `${filtered.length} tickets${filtered.length>300?' (top 300)':''}`;
+  document.getElementById('tableBody').innerHTML = items.map(i=>`
+    <tr>
+      <td><a href="https://estrela-bet.atlassian.net/browse/${i.key}" target="_blank" style="color:var(--blue);text-decoration:none">${i.key}</a></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${i.summary}">${i.summary}</td>
+      <td>${statusPill(i.status)}</td>
+      <td style="white-space:nowrap">${i.assignee}</td>
+      <td><span class="pill" style="background:#1e293b;border:1px solid var(--border)">${i.priority}</span></td>
+      <td>${i.category}</td>
+      <td>${i.timeInterno}</td>
+      <td style="white-space:nowrap;color:var(--dim)">${new Date(i.created).toLocaleDateString('pt-BR')}</td>
+      <td style="white-space:nowrap;color:var(--dim)">${new Date(i.updated).toLocaleDateString('pt-BR')}</td>
+    </tr>
+  `).join('');
+}
+
+// Init
+loadData();
 </script>
 </body>
 </html>
