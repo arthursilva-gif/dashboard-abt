@@ -226,14 +226,15 @@ async function loadData(refresh=false) {
     const apiUrl = refresh ? '/api/data?refresh=1' : '/api/data';
     const kantUrl = refresh ? 'https://kant.staradm.com/u/' + (window.KANT_USER_ID||'') + '/p/9090/api/data?refresh=1' : 'https://kant.staradm.com/u/' + (window.KANT_USER_ID||'') + '/p/9090/api/data';
     try {
-      const res = await Promise.race([
-        fetch(apiUrl),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-      ]);
+      // Tenta API local (só funciona se estiver rodando localmente)
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), 2000);
+      const res = await fetch(apiUrl, {signal: ctrl.signal});
+      clearTimeout(timer);
       if (!res.ok) throw new Error('not ok');
       json = await res.json();
     } catch(e1) {
-      // Fallback: dados embutidos
+      // Fallback: dados embutidos no HTML
       json = EMBEDDED_DATA;
     }
     rawData = json.issues || [];
