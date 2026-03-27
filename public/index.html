@@ -225,17 +225,27 @@ async function loadData(refresh=false) {
   document.getElementById('dashContent').style.display = 'none';
   try {
     let json;
-    // Tenta API local primeiro
+    // Tenta API (local ou kant proxy) primeiro
+    const KANT_API = 'https://kant.staradm.com/u/5e48416c-c922-4981-bb86-934956d73741/p/9090/api/data';
     const apiUrl = refresh ? '/api/data?refresh=1' : '/api/data';
-    const kantUrl = refresh ? 'https://kant.staradm.com/u/' + (window.KANT_USER_ID||'') + '/p/9090/api/data?refresh=1' : 'https://kant.staradm.com/u/' + (window.KANT_USER_ID||'') + '/p/9090/api/data';
-    try {
-      // Tenta API local (só funciona se estiver rodando localmente)
+    const kantUrl = refresh ? KANT_API + '?refresh=1' : KANT_API;
+    const tryFetch = async (url) => {
       const ctrl = new AbortController();
-      const timer = setTimeout(()=>ctrl.abort(), 2000);
-      const res = await fetch(apiUrl, {signal: ctrl.signal});
-      clearTimeout(timer);
-      if (!res.ok) throw new Error('not ok');
-      json = await res.json();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      try {
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('not ok');
+        return await res.json();
+      } catch(e) {
+        clearTimeout(timer);
+        throw e;
+      }
+    };
+    try {
+      // Tenta API local primeiro, depois kant proxy
+      try { json = await tryFetch(apiUrl); }
+      catch(e1) { json = await tryFetch(kantUrl); }
     } catch(e1) {
       // Fallback: dados embutidos no HTML
       json = EMBEDDED_DATA;
